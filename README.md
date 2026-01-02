@@ -17,7 +17,6 @@ To ensure the program runs correctly, the following libraries are required:
 - [SciPy](https://scipy.org/): Used specifically for its io.arff module, which allows loading the MNIST dataset provided in .arff format.
 
 All the listed modules can be installed with the [pip](https://pip.pypa.io/en/stable/) package installer by typing `pip install <package_name>` in the command line. 
-To reproduce the expriment go to the terminal and run the tests by typing `python3 main.py` (make sure to be in the correct directory).
 
 # Dataset Setup
 Since the dataset is not included in the repository (the file is too large), you can set it up manually by downloading the [MNIST](https://www.openml.org/search?type=data&sort=runs&id=554&status=active) dataset
@@ -25,4 +24,4 @@ in the `.arff` format and by placing the file into the main folder with all the 
 
 # Code
 
-Once all the necessary libraries and the dataset are installed, you can execute the testing code located in **main.py** file. 
+Once all the necessary libraries and the dataset are installed, you can execute the testing code located in **main.py** file by typing `python3 main.py` in the terminal (make sure you're in the correct directory). If any further information is needed, I suggest reading the `report.pdf` file in the repository.
