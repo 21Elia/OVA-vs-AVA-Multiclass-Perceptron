@@ -103,7 +103,7 @@ if __name__ == "__main__":
     ova_test_time = end - start
 
     results.append({
-        "Modello" : "OVA",
+        "Model" : "OVA",
         "Training Time (s)" : round(ova_train_time, 4),
         "Test Time (s)": round(ova_test_time, 4),
         "Average Prediction Time (s)" : round(ova_test_time / test_set[0].shape[0], 7),
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     ava_test_time = end - start
 
     results.append({
-        "Modello" : "AVA",
+        "Model" : "AVA",
         "Training Time (s)" : round(ava_train_time, 4),
         "Test Time (s)" : round(ava_test_time, 4),
         "Average Prediction Time (s)" : round(ava_test_time / test_set[0].shape[0], 8),
