@@ -141,5 +141,3 @@ if __name__ == "__main__":
     # printing time results
     df = pd.DataFrame(results)
     print(df.to_string(header = True, index = False, justify = 'left'))
-    latex = df.to_latex(index = False, formatters = {"name" : str.upper})
-    print(latex)
