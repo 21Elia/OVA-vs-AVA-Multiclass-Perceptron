@@ -1,36 +1,32 @@
 import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
+import numpy as np # vector manipulations
+import seaborn as sns # for the confusion matrix heatmap
+import matplotlib.pyplot as plt # for plotting
 import time
-from scipy.io import arff
+from scipy.io import arff # to load data from the '.arff' format
+
 from binary_perceptron import BinaryPerceptron
 from multiclass_OVA_perceptron import MulticlassOVAPerceptron
 from multiclass_AVA_perceptron import MulticlassAVAPerceptron
 
-def convert_data(path):
+def load_data(path):
+    # extracting real data values and metadata (data such as 'pixel1', 'pixel2' etc)
     data, meta = arff.loadarff(path)
-    # stores actual data in the variable data and metadata in variable data
-    # metadata contains the portion of data such as 'pixel1', 'pixel2', ... , 'class'
     
-    # converting to a pandas dataframe
+    # converting to pandas dataframe
     df = pd.DataFrame(data)
     print(f"{df.head()} \n")
-    print(f"Dimensioni reali: {df.shape} \n\n")
+    print(f"Real size: {df.shape} \n\n")
 
-    # extracting the labels from the dataframe into a numpy array:
-
+    # extracting the labels from the dataframe into a numpy array: 
     # 'class' column is in raw bytes because scipy.io.arff reads and returns raw bytes to avoid decoding errors
-    # so I'm firstly converting it to string, then to integer, and then to numpy array
-
+    # (doesn't know if he needs to convert to ascii, unicode or other).
+    # So I'm firstly converting it to string, then to integer, and then to numpy array
     y = df['class'].astype(str).astype(int).to_numpy()
 
-
     # extracting the x instances into a numpy array
-
     X = df.drop(columns = 'class').astype(float).to_numpy()
-    X = X / 255.0 # normalizing the pixels to avoid hyperplane overshooting during the algorithm
-
+    X = X / 255.0 # normalizing pixels (from [0, 255] to [0, 1])
     return X, y
 
 
@@ -40,52 +36,59 @@ def shuffle_data(X, y):
     # creating an array storing a permutation of the indexes 
     indexes = np.random.permutation(X.shape[0])
 
+    # shuffling examples and labels
     X_shuffled = X[indexes, :]
     y_shuffled = y[indexes]
 
     return X_shuffled, y_shuffled
 
 def split_data(X, y):
+    # defining amount of data I want the model to train on
     limit = 60000
     
+    # extracing training examples and corresponding labels
     training_X = X[:limit, :]
     training_y = y[:limit]
     training_set = (training_X, training_y)
 
+    # extracting test examples and corresponding labels
     test_X = X[limit:, :]
     test_y = y[limit:]
     test_set = (test_X, test_y)
     
     return training_set, test_set
 
-def print_confusion_matrix(confusion_matrix, method:str):
-    plt.figure(figsize=(10, 8))
+def plot_confusion_matrix(confusion_matrix, strategy:str):
+    plt.figure(figsize=(8, 6)) 
     sns.heatmap(confusion_matrix, annot=True, fmt='d', cmap='Reds')
     plt.xlabel('Predicted')
     plt.ylabel('True Label')
-    plt.title('Confusion Matrix ' + method)
-    plt.savefig('images/' + method + '-confusion-heatmap')
-    plt.show()
+    plt.title('Confusion Matrix ' + strategy)
+    plt.savefig('images/' + strategy + '-confusion-heatmap')
 
 
 if __name__ == "__main__":
-    X, y = convert_data('mnist_784.arff')
+
+    # loading the MNIST dataset: converting it from the '.arff' format to numpy arrays
+    X, y = load_data('mnist_784.arff')
     X, y = shuffle_data(X, y)
 
+    # creating training_set and test_set
     training_set:tuple # (training_X, training_y)
     test_set:tuple # (test_X, test, y)
     training_set, test_set = split_data(X, y)
 
-    training_X = training_set[0]
-    training_y = training_set[1]
-    print(f"training_y shape: {training_y.shape}\n") 
-    print(f"prima label y[0]: {training_y[0]}\n\n")
+    # # checking if everything is working as expected (uncomment if needed)
+    # print(f"training_y shape: {training_y.shape}\n") 
+    # print(f"prima label y[0]: {training_y[0]}\n\n")
 
-    print(f"training_X shape: {training_X.shape}\n")
-    print(f"random pixel from the first image of the training set (normalised): {training_X[0][204]}\n\n")
+    # print(f"training_X shape: {training_X.shape}\n")
+    # print(f"random pixel from the first image of the training set (normalised): {training_X[0][204]}\n\n")
 
     results = []
-    
+    training_X = training_set[0]
+    training_y = training_set[1]
+
     # --- TEST OVA ---
     ova = MulticlassOVAPerceptron(10, max_epochs = 100)
 
@@ -129,10 +132,14 @@ if __name__ == "__main__":
         "Accuracy %" : round(ava_accuracy, 2)
 
     })
-    print_confusion_matrix(ova_confusion_matrix, 'OVA')
-    print_confusion_matrix(confusion_matrix_AVA, 'AVA')
 
+    # plotting confusion matrices
+    plot_confusion_matrix(ova_confusion_matrix, 'OVA')
+    plot_confusion_matrix(confusion_matrix_AVA, 'AVA')
+    plt.show()
+
+    # printing time results
     df = pd.DataFrame(results)
-    print(df.to_string(header = True, index = False, justify = ''))
+    print(df.to_string(header = True, index = False, justify = 'left'))
     latex = df.to_latex(index = False, formatters = {"name" : str.upper})
     print(latex)

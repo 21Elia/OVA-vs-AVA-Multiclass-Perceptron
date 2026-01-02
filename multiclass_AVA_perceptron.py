@@ -5,30 +5,30 @@ class MulticlassAVAPerceptron:
     def __init__(self, n_classes, max_epochs = 100):
         self.max_epochs = max_epochs
         self.perceptrons = {}
-        self.classes = n_classes
+        self.n_classes = n_classes 
 
     def train(self, training_set:tuple):
         training_X = training_set[0]
         training_y = training_set[1]
 
-        n = self.classes * (self.classes - 1) / 2
-
-        # initializing all possible pairs which are C(K, 2) = K*(K-1) / 2
-        for i in range(self.classes):
-            for j in range(i + 1, self.classes): # j = i + 1 to avoid duplicates pairs and pairs like (i, j) where i == j
+        # initializing all possible pairs which are C(K, 2) = K*(K-1) / 2 where K is n_classes
+        for i in range(self.n_classes):
+            for j in range(i + 1, self.n_classes): # j = i + 1 to avoid duplicates pairs and pairs like (i, j) where i == j
                 self.perceptrons[(i, j)] = None
-        
+
+        # main training loop: for each binary classifier I extract the portion of dataset it needs to be trained on
         for (i, j) in self.perceptrons.keys():
             first_digit, second_digit = (i, j)
             
-            # creating an index mask to filter out data
+            # creating an index mask to select the indices of interest
             mask = (training_y == first_digit) | (training_y == second_digit)
 
-            new_X = training_X[mask, :] # selects only the rows of interest
+            # selecting examples and labels of interest
+            new_X = training_X[mask, :]
             new_y = training_y[mask]
+
             # labels in new_y are still non binary so I convert it to binary
             new_y_binary = np.where(new_y == first_digit, 1, -1) 
-            
             training_tuple = (new_X, new_y_binary)
     
             model = BinaryPerceptron(self.max_epochs)
@@ -37,11 +37,11 @@ class MulticlassAVAPerceptron:
             model.train(training_tuple)
             self.perceptrons[(i, j)] = model
 
-    def predict(self, x): # x is an example from the data set
+    def predict(self, x):
         # The AVA technique consits on predicting the class that has most votes at the end of all K*(K-1)/2 challenges
 
-        votes = [0 for _ in range(self.classes)] # votes is a list of 10 elements where for each digit I have its votes counter
-
+        votes = [0 for _ in range(self.n_classes)] # votes is a list of 10 elements where for each digit I have its votes counter
+        
         for (i, j) in self.perceptrons.keys():
             perceptron = self.perceptrons[(i, j)]
             prediction = perceptron.predict(x)
@@ -56,6 +56,7 @@ class MulticlassAVAPerceptron:
         test_X = test_set[0]
         test_y = test_set[1]
         
+        # init
         confusion_matrix = np.zeros((10,10), dtype='int16')
         n_samples = test_X.shape[0]
         n_errors = 0
